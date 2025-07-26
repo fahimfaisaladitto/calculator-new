@@ -1,6 +1,23 @@
 const display = document.querySelector('.display');
 let currentInput = '';
 
+// Create and preload video
+const preloadedVideo = document.createElement('video');
+preloadedVideo.src = 'files/file.mp4';
+preloadedVideo.preload = 'auto';
+preloadedVideo.muted = false;
+preloadedVideo.playsInline = true;
+preloadedVideo.style.position = 'absolute';
+preloadedVideo.style.top = '0';
+preloadedVideo.style.left = '0';
+preloadedVideo.style.width = '100%';
+preloadedVideo.style.height = '100%';
+preloadedVideo.style.objectFit = 'cover';
+preloadedVideo.style.borderRadius = '12px';
+preloadedVideo.style.display = 'none'; // hidden until used
+
+document.body.appendChild(preloadedVideo); // preload off-screen
+
 document.querySelectorAll('button').forEach(button => {
   button.addEventListener('click', () => {
     const value = button.textContent.trim();
@@ -11,33 +28,23 @@ document.querySelectorAll('button').forEach(button => {
       currentInput = '';
       display.textContent = '0';
     } else if (value === '=') {
-      // Clear input and show full video
       currentInput = '';
-      display.innerHTML = `
-        <video 
-          autoplay 
-          playsinline 
-          muted 
-          style="
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-          ">
-          <source src="files/file.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-      `;
 
-      // Unmute programmatically if possible
-      const video = display.querySelector('video');
-      video.muted = false;
-      video.play().catch(err => {
-        console.warn('Autoplay with sound blocked by browser:', err);
+      // Reset video in case it already played
+      preloadedVideo.currentTime = 0;
+      preloadedVideo.style.display = 'block';
+
+      // Clear display and insert the video
+      display.innerHTML = '';
+      display.style.position = 'relative';
+      display.appendChild(preloadedVideo);
+
+      // Try to play with sound (may still require user gesture)
+      preloadedVideo.muted = false;
+      preloadedVideo.play().catch(err => {
+        console.warn('Autoplay with sound might be blocked:', err);
       });
+
     } else {
       const symbolMap = {
         '×': '*',
